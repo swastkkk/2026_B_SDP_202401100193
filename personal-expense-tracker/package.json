@@ -1,0 +1,20 @@
+{
+  "name": "personal-expense-tracker",
+  "version": "1.0.0",
+  "description": "College Student Friendly Personal Expense and Budget Tracker",
+  "scripts": {
+    "dev": "concurrently -n \"BACKEND,FRONTEND\" -c \"blue,green\" \"npm run dev --prefix src/backend\" \"npm run dev --prefix src/frontend\"",
+    "dev:backend": "npm run dev --prefix src/backend",
+    "dev:frontend": "npm run dev --prefix src/frontend",
+    "build": "npm run build --prefix src/backend && npm run build --prefix src/frontend",
+    "setup:backend": "npm install --prefix src/backend && npm run db:setup --prefix src/backend",
+    "setup:frontend": "npm install --prefix src/frontend",
+    "setup": "npm install && npm run setup:backend && npm run setup:frontend",
+    "test": "node --test test/verify_endpoints.js"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "author": "SDP Student Team",
+  "license": "MIT"
+}

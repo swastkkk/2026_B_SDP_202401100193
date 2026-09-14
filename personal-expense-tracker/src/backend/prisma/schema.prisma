@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  name         String
+  password     String
+  avatar       String?       @default("https://api.dicebear.com/7.x/bottts/svg?seed=Pockit")
+  currency     String        @default("₹")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Category {
+  id           Int           @id @default(autoincrement())
+  userId       Int
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  icon         String?       @default("Tag")
+  color        String?       @default("#6B7280")
+  type         String        @default("EXPENSE") // "EXPENSE" or "INCOME"
+  parentId     Int?
+  parent       Category?     @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children     Category[]    @relation("CategoryHierarchy")
+  transactions Transaction[]
+  budgets      Budget[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+}
+
+model Transaction {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount        Float
+  type          String   @default("EXPENSE") // "EXPENSE" or "INCOME"
+  date          DateTime @default(now())
+  paymentMethod String   @default("UPI")     // "UPI", "CASH", "CARD", "NET_BANKING"
+  notes         String?
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([categoryId])
+}
+
+model Budget {
+  id             Int       @id @default(autoincrement())
+  userId         Int
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  monthlyLimit   Float
+  month          Int       // 1 - 12
+  year           Int       // e.g. 2026
+  alertThreshold Float     @default(80.0) // percentage trigger for warning (e.g. 80%)
+  categoryId     Int?      // Null = overall total budget limit across all categories
+  category       Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, categoryId, month, year])
+  @@index([userId])
+}
